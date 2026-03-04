@@ -51,61 +51,74 @@
       pointer-events:none;
       z-index:-1;
     }
+/* Top Nav (auto-hide on scroll down, show on scroll up) */
+nav{
+  position:fixed;
+  top:0; left:0; right:0;
+  background: rgba(20,24,33,.72);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  z-index:1000;
 
-    /* Top Nav */
-    nav{
-      position:fixed;
-      top:0; left:0; right:0;
-      background: rgba(20,24,33,.72);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid rgba(255,255,255,.08);
-      z-index:1000;
-    }
-    .nav-inner{
-      max-width: var(--maxw);
-      margin: 0 auto;
-      padding: 12px 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-    }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      text-decoration:none; color:var(--text);
-      min-width: 170px;
-    }
-    .brand-badge{
-      width:34px; height:34px;
-      border-radius:12px;
-      display:grid; place-items:center;
-      font-weight:900;
-      background: linear-gradient(135deg, rgba(124,198,255,.95), rgba(102,242,194,.85));
-      color:#081018;
-      box-shadow: 0 16px 30px rgba(124,198,255,.18);
-    }
-    .brand-text{ line-height:1.1; }
-    .brand-title{ font-weight:900; font-size:13.5px; letter-spacing:.2px; }
-    .brand-sub{ font-size:11px; color: rgba(232,238,246,.70); margin-top:2px; }
+  /* 新增：滑出/滑入動畫 */
+  transition: transform .28s cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+}
 
-    .nav-links{
-      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
-    }
-    .nav-links a{
-      text-decoration:none;
-      color: rgba(232,238,246,.82);
-      font-weight:700;
-      font-size:12.5px;
-      padding:9px 10px;
-      border-radius: 12px;
-      border: 1px solid transparent;
-      transition: .15s ease;
-    }
-    .nav-links a:hover{
-      background: rgba(255,255,255,.06);
-      border-color: rgba(255,255,255,.10);
-    }
+/* 新增：隱藏狀態（往下滑會加上這個 class） */
+nav.nav-hide{
+  transform: translateY(-110%);
+}
 
+.nav-inner{
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.brand{
+  display:flex; align-items:center; gap:10px;
+  text-decoration:none; color:var(--text);
+  min-width: 170px;
+}
+
+.brand-badge{
+  width:34px; height:34px;
+  border-radius:12px;
+  display:grid; place-items:center;
+  font-weight:900;
+  background: linear-gradient(135deg, rgba(124,198,255,.95), rgba(102,242,194,.85));
+  color:#081018;
+  box-shadow: 0 16px 30px rgba(124,198,255,.18);
+}
+
+.brand-text{ line-height:1.1; }
+.brand-title{ font-weight:900; font-size:13.5px; letter-spacing:.2px; }
+.brand-sub{ font-size:11px; color: rgba(232,238,246,.70); margin-top:2px; }
+
+.nav-links{
+  display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+}
+
+.nav-links a{
+  text-decoration:none;
+  color: rgba(232,238,246,.82);
+  font-weight:700;
+  font-size:12.5px;
+  padding:9px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: .15s ease;
+}
+
+.nav-links a:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.10);
+}
     /* Sections */
     section{
       max-width: var(--maxw);
@@ -1084,6 +1097,30 @@
       Plotly.Plots.resize("flowPlot");
       Plotly.Plots.resize("roadmapPlot");
     });
+
+    // Auto-hide navbar: hide on scroll down, show on scroll up
+(function(){
+  const nav = document.querySelector("nav");
+  if(!nav) return;
+
+  let lastY = window.scrollY || 0;
+  const threshold = 80; // 滑超過這個距離才開始隱藏，避免一點點滑動就閃
+
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY || 0;
+    const goingDown = y > lastY;
+
+    if (y <= 0) {
+      nav.classList.remove("nav-hide");   // 在最上方一定顯示
+    } else if (goingDown && y > threshold) {
+      nav.classList.add("nav-hide");      // 往下滑 → 隱藏
+    } else {
+      nav.classList.remove("nav-hide");   // 往上滑 → 顯示
+    }
+
+    lastY = y;
+  }, { passive:true });
+})();
   </script>
 </body>
 </html>
