@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AI會計自動化系統（中小企業）</title>
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <style>
+    :root{
+      --bg0:#0b0d12;
+      --bg1:#0f1115;
+      --panel:#141821;
+      --card:#171c26;
+      --card2:#1a2030;
+      --line:rgba(255,255,255,.10);
+      --text:#e8eef6;
+      --muted:#b8c3d3;
+      --muted2:#93a3b9;
+      --accent:#7cc6ff;
+      --accent2:#66f2c2;
+      --shadow:0 18px 48px rgba(0,0,0,.45);
+      --radius:16px;
+      --radius2:20px;
+      --maxw:760px;
+    }
+
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC",system-ui,Arial,sans-serif;
+      background: var(--bg1);
+      color: var(--text);
+      line-height:1.75;
+      overflow-x:hidden;
+    }
+
+    /* 碳纖維質感（深色 + 斜紋） */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(124,198,255,.18), transparent 60%),
+        radial-gradient(900px 700px at 90% 10%, rgba(102,242,194,.12), transparent 55%),
+        linear-gradient(135deg, rgba(255,255,255,.05) 0 10%, transparent 10% 50%, rgba(255,255,255,.04) 50% 60%, transparent 60% 100%),
+        linear-gradient(45deg, rgba(255,255,255,.035) 0 10%, transparent 10% 50%, rgba(255,255,255,.028) 50% 60%, transparent 60% 100%);
+      background-size: auto, auto, 26px 26px, 26px 26px;
+      background-position: center, center, 0 0, 13px 13px;
+      opacity:.85;
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    /* Top Nav */
+    nav{
+      position:fixed;
+      top:0; left:0; right:0;
+      background: rgba(20,24,33,.72);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      z-index:1000;
+    }
+    .nav-inner{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none; color:var(--text);
+      min-width: 170px;
+    }
+    .brand-badge{
+      width:34px; height:34px;
+      border-radius:12px;
+      display:grid; place-items:center;
+      font-weight:900;
+      background: linear-gradient(135deg, rgba(124,198,255,.95), rgba(102,242,194,.85));
+      color:#081018;
+      box-shadow: 0 16px 30px rgba(124,198,255,.18);
+    }
+    .brand-text{ line-height:1.1; }
+    .brand-title{ font-weight:900; font-size:13.5px; letter-spacing:.2px; }
+    .brand-sub{ font-size:11px; color: rgba(232,238,246,.70); margin-top:2px; }
+
+    .nav-links{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    .nav-links a{
+      text-decoration:none;
+      color: rgba(232,238,246,.82);
+      font-weight:700;
+      font-size:12.5px;
+      padding:9px 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: .15s ease;
+    }
+    .nav-links a:hover{
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.10);
+    }
+
+    /* Sections */
+    section{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 110px 16px 28px;
+    }
+    .hero{
+      padding-top: 140px;
+      text-align:left;
+    }
+
+    h1{
+      font-size: 38px;
+      line-height:1.12;
+      letter-spacing:-.3px;
+      margin: 0 0 14px;
+    }
+    .accent{
+      background: linear-gradient(90deg, var(--accent), #b69cff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    h2{
+      font-size: 30px;
+      margin: 0 0 14px;
+      letter-spacing:-.2px;
+    }
+
+    .lead{
+      font-size: 18.5px;
+      color: rgba(232,238,246,.82);
+      margin: 0 0 18px;
+    }
+    .muted{ color: rgba(184,195,211,.90); }
+    .muted2{ color: rgba(147,163,185,.92); }
+
+    .cta-row{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top: 18px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding: 11px 14px;
+      border-radius: 14px;
+      font-weight:850;
+      font-size: 13.5px;
+      text-decoration:none;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(232,238,246,.90);
+      box-shadow: 0 14px 28px rgba(0,0,0,.25);
+    }
+    .btn.primary{
+      color:#06121a;
+      border-color: rgba(124,198,255,.30);
+      background: linear-gradient(135deg, rgba(124,198,255,.95), rgba(102,242,194,.85));
+      box-shadow: 0 18px 34px rgba(124,198,255,.18);
+    }
+
+    /* Cards */
+    .card{
+      background: rgba(23,28,38,.78);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius2);
+      padding: 22px 18px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card{ margin-top: 14px; }
+
+    .section-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .section-head p{
+      margin:0;
+      color: rgba(184,195,211,.92);
+      font-size: 14.5px;
+      max-width: 520px;
+    }
+
+    /* one-screen feel: spacing + not too much text */
+    .card p{ margin: 10px 0 0; font-size: 17.2px; color: rgba(232,238,246,.78); }
+    .card ul{ margin: 10px 0 0 18px; color: rgba(232,238,246,.78); font-size: 17px; }
+    .card li{ margin: 6px 0; }
+
+    .kpi-grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .kpi{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      padding: 14px 12px;
+    }
+    .kpi .num{
+      font-weight: 950;
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .kpi .txt{
+      margin-top: 6px;
+      font-size: 12.8px;
+      color: rgba(184,195,211,.92);
+      line-height:1.35;
+    }
+
+    /* Product grid */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .feature{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      padding: 16px 14px;
+    }
+    .feature h3{
+      margin:0 0 8px;
+      font-size: 18px;
+      letter-spacing:-.1px;
+    }
+    .feature p{
+      margin:0;
+      font-size: 16.6px;
+      color: rgba(232,238,246,.76);
+    }
+
+    /* Workflow clickable boxes */
+    .flow-boxes{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .flow-box{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      text-decoration:none;
+      color: rgba(232,238,246,.92);
+      border-radius: 18px;
+      padding: 14px 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(124,198,255,.12), rgba(102,242,194,.08));
+      box-shadow: 0 16px 36px rgba(0,0,0,.30);
+      transition:.15s ease;
+    }
+    .flow-box:hover{
+      transform: translateY(-1px);
+      border-color: rgba(124,198,255,.30);
+    }
+    .flow-left{
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .flow-title{
+      font-weight: 950;
+      letter-spacing:.1px;
+      font-size: 16.8px;
+    }
+    .flow-sub{
+      font-size: 12.8px;
+      color: rgba(184,195,211,.92);
+    }
+    .flow-chip{
+      font-size: 12px;
+      font-weight: 900;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(124,198,255,.28);
+      background: rgba(124,198,255,.10);
+      color: rgba(124,198,255,.95);
+      white-space:nowrap;
+    }
+
+    /* Plotly containers */
+    .plot{
+      width:100%;
+      height: 520px;
+      border-radius: 18px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .plot.small{ height: 460px; }
+
+    /* Team */
+    .team-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .member{
+      border-radius: 22px;
+      padding: 22px 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: var(--shadow);
+    }
+    .member h3{
+      margin:0 0 10px;
+      font-size: 22px;
+      letter-spacing:-.1px;
+    }
+    .role{
+      font-weight: 900;
+      font-size: 13px;
+      color: rgba(232,238,246,.90);
+      opacity: .95;
+      margin-bottom: 10px;
+    }
+    .pillrow{
+      display:flex; flex-wrap:wrap; gap: 8px;
+      margin: 8px 0 10px;
+    }
+    .pill{
+      font-size: 12px;
+      font-weight: 900;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      color: rgba(232,238,246,.88);
+    }
+    .block{
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+    .block .label{
+      font-size: 12.5px;
+      font-weight: 950;
+      letter-spacing:.2px;
+      color: rgba(124,198,255,.95);
+      margin-bottom: 6px;
+    }
+    .block .text{
+      font-size: 16.6px;
+      color: rgba(232,238,246,.78);
+      line-height:1.65;
+    }
+
+    /* member gradients (brighter than bg) */
+    .g1{ background: linear-gradient(135deg, rgba(31,38,51,.96), rgba(42,49,66,.96)); }
+    .g2{ background: linear-gradient(135deg, rgba(32,42,60,.96), rgba(46,59,85,.96)); }
+    .g3{ background: linear-gradient(135deg, rgba(31,44,56,.96), rgba(44,64,83,.96)); }
+    .g4{ background: linear-gradient(135deg, rgba(28,38,53,.96), rgba(44,55,72,.96)); }
+    .g5{ background: linear-gradient(135deg, rgba(31,40,56,.96), rgba(45,60,79,.96)); }
+    .g6{ background: linear-gradient(135deg, rgba(32,42,60,.96), rgba(51,65,85,.96)); }
+
+    /* reveal animations (different styles) */
+    .reveal{
+      opacity:0;
+      filter: blur(2px);
+      transform: translateY(26px);
+      transition: 900ms cubic-bezier(.2,.8,.2,1);
+      will-change: transform, opacity, filter;
+    }
+    .reveal.active{
+      opacity:1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+    .reveal[data-anim="left"]{ transform: translateX(-22px); }
+    .reveal[data-anim="right"]{ transform: translateX(22px); }
+    .reveal[data-anim="up"]{ transform: translateY(28px); }
+    .reveal[data-anim="zoom"]{ transform: scale(.98); }
+    .reveal.active[data-anim="left"],
+    .reveal.active[data-anim="right"],
+    .reveal.active[data-anim="up"],
+    .reveal.active[data-anim="zoom"]{
+      transform: none;
+    }
+
+    /* footer */
+    .foot{
+      padding: 32px 16px 56px;
+      max-width: var(--maxw);
+      margin: 0 auto;
+      color: rgba(184,195,211,.70);
+      font-size: 12.8px;
+    }
+
+    @media (max-width: 420px){
+      h1{ font-size: 34px; }
+      h2{ font-size: 28px; }
+      .lead{ font-size: 18px; }
+      .card p, .card ul{ font-size: 16.6px; }
+      .plot{ height: 500px; }
+    }
+    @media (min-width: 860px){
+      .flow-boxes{ grid-template-columns: 1fr 1fr; }
+      .grid{ grid-template-columns: 1fr 1fr; }
+      .team-grid{ grid-template-columns: 1fr 1fr; }
+      .plot{ height: 540px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a class="brand" href="#top">
+        <div class="brand-badge">AI</div>
+        <div class="brand-text">
+          <div class="brand-title">AI會計自動化系統</div>
+          <div class="brand-sub">中小企業｜LLM + 調節表 + 財報檢核</div>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="#problem">問題</a>
+        <a href="#necessity">必要性</a>
+        <a href="#solution">解法</a>
+        <a href="#product">產品</a>
+        <a href="#cost">成本</a>
+        <a href="#benefit">效益</a>
+        <a href="#workflow">流程</a>
+        <a href="#roadmap">時程</a>
+        <a href="#team">團隊</a>
+      </div>
+    </div>
+  </nav>
+
+  <section id="top" class="hero">
+    <h1>把「對帳、調節、補分錄」<br><span class="accent">變成可追溯的工作清單</span></h1>
+    <p class="lead">
+      我們開發一套面向中小企業的 <b>AI會計自動化平台</b>：以 <b>LLM</b> 提供交易分類與分錄草案，
+      用 <b>調節表/對帳</b> 模組把差異轉成待辦，最後輸出 <b>財報 + 明細 + 檢核結果</b>，降低成本並降低錯誤率。
+    </p>
+
+    <div class="cta-row">
+      <a class="btn primary" href="#workflow">先看流程</a>
+      <a class="btn" href="#roadmap">看一年時程</a>
+      <a class="btn" href="#team">看分工（不用開會）</a>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="num">LLM</div>
+        <div class="txt">語意理解交易摘要<br>提出分錄草案與理由</div>
+      </div>
+      <div class="kpi">
+        <div class="num">調節表</div>
+        <div class="txt">銀行調節 + AR/AP對帳<br>把差異變成任務</div>
+      </div>
+      <div class="kpi">
+        <div class="num">可追溯</div>
+        <div class="txt">報表 → 分錄 → 交易<br>稽核與內控友善</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 問題 -->
+  <section id="problem" class="reveal" data-anim="left">
+    <div class="section-head">
+      <div>
+        <h2>業界問題</h2>
+        <p>我們鎖定「中型/小型公司」會計作業最耗時、最容易錯的環節。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="muted">
+        多數中小企業在會計流程上面臨的是「大量重複 + 高風險」的工作：
+      </p>
+      <ul>
+        <li><b>交易分類與分錄</b>：依賴人工判斷，學習成本高、錯誤難即時發現。</li>
+        <li><b>銀行調節/對帳</b>：反覆比對明細、找差異、補分錄，是最耗時間的核心痛點。</li>
+        <li><b>財報產出與修正</b>：月底/季底才發現錯，常需要回頭補帳，成本更高。</li>
+        <li><b>缺乏追溯能力</b>：報表數字找不到明確來源，影響內控、稽核與決策。</li>
+      </ul>
+      <p class="muted2">
+        我們的結論：<b>真正浪費人力的不是「輸出報表」而是「抓差異、調節、修正、重做」</b>。
+      </p>
+    </div>
+  </section>
+
+  <!-- 必要性 -->
+  <section id="necessity" class="reveal" data-anim="right">
+    <div class="section-head">
+      <div>
+        <h2>專案必要性</h2>
+      </div>
+    </div>
+
+    <div class="card">
+      <p>
+        現有會計軟體通常提供「輸入/查詢/輸出」的工具，但在中小企業實務中，
+        最痛的是 <b>對帳與調節</b>、以及 <b>大量交易的分類與分錄建置</b>。
+      </p>
+      <p>
+        <b>LLM 的價值</b>不在於取代會計判斷，而是把「判斷」變成「可審核的建議」：
+        讓會計人員從「從零開始做」變成「快速確認與修正」。
+      </p>
+      <p>
+        因此，本專案要做的是一個能落地的 Prototype：
+        <b>LLM 提案 → 人類核准 → 調節表兜底 → 財報可追溯</b>，
+        把最花時間、最容易錯的環節先解決。
+      </p>
+    </div>
+  </section>
+
+  <!-- 解法 -->
+  <section id="solution" class="reveal" data-anim="up">
+    <div class="section-head">
+      <div>
+        <h2>解決方案</h2>
+        <p>我們要做的是「完整閉環」，不是只做報表產生器。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="muted">核心設計原則：</p>
+      <ul>
+        <li><b>資料庫優先</b>：交易/分錄/調節/輸出歷程全入庫，才能追溯與重現。</li>
+        <li><b>LLM 為主</b>：輸出分錄草案 + 理由 + 信心（人可以審核）。</li>
+        <li><b>調節表為核心</b>：銀行調節與 AR/AP 對帳，將差異變成任務清單。</li>
+        <li><b>檢核兜底</b>：平衡檢查、合理性規則、期間一致性，降低錯誤率。</li>
+      </ul>
+      <p class="muted2">
+        你在台上可以用一句話收斂：<b>「我們不是要取代會計，是要縮短會計工作中的重複與抓錯時間。」</b>
+      </p>
+    </div>
+  </section>
+
+  <!-- 產品 -->
+  <section id="product" class="reveal" data-anim="zoom">
+    <div class="section-head">
+      <div>
+        <h2>產品功能</h2>
+        <p>每個模組都能獨立交付，也能組成完整流程。</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="feature card reveal" data-anim="left">
+        <h3>LLM會計助手（分類/分錄草案）</h3>
+        <p>
+          讀取交易摘要、對象、用途描述，提出科目與分錄草案，並提供理由與信心分數，
+          讓會計人員用「審核」取代「從零開始」。
+        </p>
+      </div>
+
+      <div class="feature card reveal" data-anim="right">
+        <h3>調節表/對帳模組（核心痛點）</h3>
+        <p>
+          銀行調節、AR/AP 對帳：自動比對明細、標出差異、生成待辦清單，
+          並建議可能的調整方向（例如漏帳、重覆入帳、期間錯置）。
+        </p>
+      </div>
+
+      <div class="feature card reveal" data-anim="left">
+        <h3>財報生成（報表 + 明細）</h3>
+        <p>
+          產生損益表、資產負債表（先做兩張最穩），並提供 drill-down 明細，
+          讓每個數字都能追到分錄與交易。
+        </p>
+      </div>
+
+      <div class="feature card reveal" data-anim="right">
+        <h3>檢核與風控</h3>
+        <p>
+          平衡檢查、合理性規則、期間一致性、異常跳動提示。
+          目的不是「限制」，而是把錯誤在輸出前抓掉，降低補帳成本。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 成本 -->
+  <section id="cost" class="reveal" data-anim="left">
+    <div class="section-head">
+      <div>
+        <h2>系統成本</h2>
+        
+      </div>
+    </div>
+
+    <div class="card">
+      <p><b>成本結論：</b>專題階段不需要募資，成本可控，重點在「取得企業訪談與案例回饋」。</p>
+      <ul>
+        <li><b>LLM API</b>：依使用量計費（可設定上限），專題 demo 規模成本低。</li>
+        <li><b>伺服器/部署</b>：可用低成本雲端或校內/個人設備；demo 不吃重規模。</li>
+        <li><b>資料庫</b>：採開源（例如 PostgreSQL / SQLite）即可。</li>
+      </ul>
+      <p class="muted2">如果老師問「為什麼不用做成完整ERP」：你就說我們聚焦在能創造最大價值的痛點模組。</p>
+    </div>
+  </section>
+
+  <!-- 效益 -->
+  <section id="benefit" class="reveal" data-anim="right">
+    <div class="section-head">
+      <div>
+        <h2>預期改善</h2>
+        
+      </div>
+    </div>
+
+    <div class="card">
+      <ul>
+        <li><b>會計處理時間</b>：透過「分錄草案 + 調節清單」降低重複作業（目標：-40%）。</li>
+        <li><b>錯誤率</b>：透過檢核兜底與可追溯流程，降低月底補帳（目標：-60%）。</li>
+        <li><b>報表產出效率</b>：把大量時間從「整理」轉為「確認」（目標：速度提升數倍）。</li>
+        <li><b>內控/稽核友善</b>：每個數字可追到交易與分錄來源，降低溝通成本。</li>
+      </ul>
+      <p class="muted2">注意：這些是「專題目標指標」，最後可用 demo 案例呈現達成程度。</p>
+    </div>
+  </section>
+
+  <!-- 流程（你要的：圓角方塊可點 → 跳到下面流程詳細說明） -->
+  <section id="workflow" class="reveal" data-anim="up">
+    <div class="section-head">
+      <div>
+        <h2>系統流程</h2>
+        <p>點每個圓角方塊，下方有該流程的「詳細說明」。</p>
+      </div>
+    </div>
+
+    <div class="flow-boxes">
+      <a class="flow-box" href="#step-1">
+        <div class="flow-left">
+          <div class="flow-title">1｜資料匯入</div>
+          <div class="flow-sub">交易/對帳/憑證（MVP先支援Excel/CSV）</div>
+        </div>
+        <div class="flow-chip">點我看細節</div>
+      </a>
+
+      <a class="flow-box" href="#step-2">
+        <div class="flow-left">
+          <div class="flow-title">2｜資料庫入庫</div>
+          <div class="flow-sub">標準化欄位、版本、查詢路徑</div>
+        </div>
+        <div class="flow-chip">點我看細節</div>
+      </a>
+
+      <a class="flow-box" href="#step-3">
+        <div class="flow-left">
+          <div class="flow-title">3｜LLM會計助手</div>
+          <div class="flow-sub">分類 + 分錄草案 + 理由/信心 + 缺件提醒</div>
+        </div>
+        <div class="flow-chip">點我看細節</div>
+      </a>
+
+      <a class="flow-box" href="#step-4">
+        <div class="flow-left">
+          <div class="flow-title">4｜調節表/對帳</div>
+          <div class="flow-sub">銀行調節、AR/AP對帳：差異→工作清單</div>
+        </div>
+        <div class="flow-chip">點我看細節</div>
+      </a>
+
+      <a class="flow-box" href="#step-5">
+        <div class="flow-left">
+          <div class="flow-title">5｜人工審核</div>
+          <div class="flow-sub">接受/修改/補件：LLM提案、人類核准</div>
+        </div>
+        <div class="flow-chip">點我看細節</div>
+      </a>
+
+      <a class="flow-box" href="#step-6">
+        <div class="flow-left">
+          <div class="flow-title">6｜報表生成 + 檢核</div>
+          <div class="flow-sub">損益/資產負債（MVP）+ 平衡/合理性檢核</div>
+        </div>
+        <div class="flow-chip">點我看細節</div>
+      </a>
+
+      <a class="flow-box" href="#step-7">
+        <div class="flow-left">
+          <div class="flow-title">7｜輸出交付</div>
+          <div class="flow-sub">報表 + 明細 + 調節表 + 問題清單 + 歷程</div>
+        </div>
+        <div class="flow-chip">點我看細節</div>
+      </a>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <p class="muted">下圖是流程總覽（Plotly Sankey，手機也會自適應）。</p>
+      <div id="flowPlot" class="plot small"></div>
+      <p class="muted2">提示：Sankey 上 hover 會顯示該步驟的用途與輸出。</p>
+    </div>
+  </section>
+
+  <!-- 流程詳細說明（每一步一張卡，重要資訊完整包含，讓你不用開會） -->
+  <section id="workflow-details" class="reveal" data-anim="zoom">
+    <div class="section-head">
+      <div>
+        <h2>流程詳細說明</h2>
+        <p>每步驟都包含：目的、輸入、輸出、我們要做的重點。</p>
+      </div>
+    </div>
+
+    <div id="step-1" class="card reveal" data-anim="left">
+      <h3 style="margin:0 0 10px; font-size:20px;">1｜資料匯入</h3>
+      <p class="muted"><b>目的：</b>把企業現有資料先導入，建立可重跑、可驗證的資料來源。</p>
+      <p><b>輸入：</b>交易明細（Excel/CSV）、銀行對帳資料（可選）、憑證清單（可選）。</p>
+      <p><b>輸出：</b>原始資料版本（raw）＋ 匯入紀錄（時間/來源/欄位對應）。</p>
+      <p class="muted2"><b>重點：</b>MVP 不追求「所有系統都能接」，先做到「可匯入、可重現、可追溯」。</p>
+    </div>
+
+    <div id="step-2" class="card reveal" data-anim="right">
+      <h3 style="margin:0 0 10px; font-size:20px;">2｜資料庫入庫（標準化）</h3>
+      <p class="muted"><b>目的：</b>沒有一致資料模型，LLM/調節/報表都會不穩。</p>
+      <p><b>輸入：</b>raw 資料。</p>
+      <p><b>輸出：</b>標準化表（transactions / journal / reconciliation / outputs）。</p>
+      <p class="muted2"><b>重點：</b>加上基本索引/查詢路徑，讓後續搜尋與對帳效率穩定。（你提到的資料結構最佳化點到即可）</p>
+    </div>
+
+    <div id="step-3" class="card reveal" data-anim="up">
+      <h3 style="margin:0 0 10px; font-size:20px;">3｜LLM會計助手（分錄草案）</h3>
+      <p class="muted"><b>目的：</b>把「人工判斷」變成「可審核的建議」，縮短作業時間。</p>
+      <p><b>輸入：</b>交易摘要、對象、用途、金額、日期（必要欄位）。</p>
+      <p><b>輸出：</b>分錄草案（借貸/科目）＋ 理由（文字）＋ 信心分數（0~1）＋ 缺件提醒。</p>
+      <p class="muted2"><b>重點：</b>LLM 不能直接「過帳」，一定要經過人工審核；我們做的是「建議＋解釋」不是「自動做帳」。</p>
+    </div>
+
+    <div id="step-4" class="card reveal" data-anim="left">
+      <h3 style="margin:0 0 10px; font-size:20px;">4｜調節表/對帳（核心亮點）</h3>
+      <p class="muted"><b>目的：</b>會計最耗時的是抓差異。這步驟把差異變成待辦清單。</p>
+      <p><b>輸入：</b>帳上交易/分錄 + 銀行對帳資料 / AR/AP 明細（擇一或擇二）。</p>
+      <p><b>輸出：</b>調節表（reconciliation schedule）＋ 差異清單（每筆差異的推測原因）＋ 建議調整方向。</p>
+      <p class="muted2"><b>重點：</b>MVP 建議先做 2 種：<b>銀行存款調節 + AR/AP 對帳</b>，就已經很有業界價值。</p>
+    </div>
+
+    <div id="step-5" class="card reveal" data-anim="right">
+      <h3 style="margin:0 0 10px; font-size:20px;">5｜人工審核（人機協作落地點）</h3>
+      <p class="muted"><b>目的：</b>確保穩定性與責任歸屬：LLM 提案、人類核准。</p>
+      <p><b>輸入：</b>分錄草案 + 調節差異清單。</p>
+      <p><b>輸出：</b>核准分錄、修改紀錄、補件狀態（例：待憑證）。</p>
+      <p class="muted2"><b>重點：</b>這一步也是防弊：任何變更都留下紀錄，後續可追溯。</p>
+    </div>
+
+    <div id="step-6" class="card reveal" data-anim="zoom">
+      <h3 style="margin:0 0 10px; font-size:20px;">6｜報表生成 + 檢核（降低錯誤率）</h3>
+      <p class="muted"><b>目的：</b>快速產出可用報表，並在輸出前做風控檢核。</p>
+      <p><b>輸入：</b>核准後分錄 + 帳務彙總。</p>
+      <p><b>輸出：</b>損益表、資產負債表（MVP）＋ 明細 drill-down ＋ 檢核結果（平衡/合理性/期間一致性）。</p>
+      <p class="muted2"><b>重點：</b>現金流量表可作為後續擴充；先把「兩張最穩」做完整並可追溯。</p>
+    </div>
+
+    <div id="step-7" class="card reveal" data-anim="up">
+      <h3 style="margin:0 0 10px; font-size:20px;">7｜輸出交付（投資案式成果包）</h3>
+      <p class="muted"><b>目的：</b>讓成果可交付、可展示、可驗證。</p>
+      <p><b>輸出內容：</b>報表（PDF/Excel）＋ 報表明細 ＋ 調節表 ＋ 問題清單 ＋ 作業歷程。</p>
+      <p class="muted2"><b>重點：</b>期末展示時，你可以用「一個月的案例」從匯入到輸出完整跑一遍，最有說服力。</p>
+    </div>
+  </section>
+
+  <!-- 時程 -->
+  <section id="roadmap" class="reveal" data-anim="left">
+    <div class="section-head">
+      <div>
+        <h2>開發時程（月份進度 + 負責人）</h2>
+        <p>月份放在縱軸 會顯示「負責人 + 本月交付物」。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="roadmapPlot" class="plot"></div>
+      <p class="muted2">
+        橫軸是「階段（1→5）」縱軸是月份。
+      </p>
+    </div>
+  </section>
+
+  <!-- 團隊 -->
+  <section id="team" class="reveal" data-anim="right">
+    <div class="section-head">
+      <div>
+        <h2>團隊</h2>
+        
+      </div>
+    </div>
+
+    <div class="team-grid">
+      <div class="member g1 reveal" data-anim="left">
+        <h3>譚孝安</h3>
+        <div class="role">技術負責｜系統架構與核心開發</div>
+        <div class="pillrow">
+          <span class="pill">系統架構</span><span class="pill">資料庫</span><span class="pill">LLM整合</span><span class="pill">Demo落地</span>
+        </div>
+
+        <div class="block">
+          <div class="label">專長</div>
+          <div class="text">程式開發、資料處理、系統架構設計。</div>
+        </div>
+
+        <div class="block">
+          <div class="label">主要任務（詳細）</div>
+          <div class="text">
+            1) 規劃整體系統架構（模組拆分、資料流、權限/審核流程）。<br>
+            2) 設計資料庫結構：交易、分錄、調節表、輸出歷程（可追溯）。<br>
+            3) 整合 LLM：交易語意理解 → 分錄草案 → 理由/信心 → 缺件提醒。<br>
+            4) 與會計邏輯協作，把規則落成可驗證的程式與介面流程。<br>
+            5) 期末 demo：把案例「從匯入到報表輸出」完整跑通。
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="label">交付物</div>
+          <div class="text">可運作的 demo 系統、資料庫 schema、LLM 模組、部署與展示流程。</div>
+        </div>
+      </div>
+
+      <div class="member g2 reveal" data-anim="right">
+        <h3>張承燁</h3>
+        <div class="role">會計/財報邏輯｜規則與檢核設計</div>
+        <div class="pillrow">
+          <span class="pill">財報結構</span><span class="pill">調節表邏輯</span><span class="pill">檢核規則</span>
+        </div>
+
+        <div class="block">
+          <div class="label">主要任務（詳細）</div>
+          <div class="text">
+            1) 定義 MVP 報表範圍：損益表、資產負債表（先完整、再擴充）。<br>
+            2) 建立「調節表/對帳」邏輯：銀行調節、AR/AP 對帳的差異分類與處理方式。<br>
+            3) 設計報表檢核規則：平衡檢查、合理性提示、期間一致性、異常跳動警示。<br>
+            4) 提供 LLM 的「分類參考」：常見交易情境對應科目/分錄的規則框架（供系統使用）。
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="label">交付物</div>
+          <div class="text">報表規格、調節表規格、檢核規則清單、案例分類與測試情境。</div>
+        </div>
+      </div>
+
+      <div class="member g3 reveal" data-anim="left">
+        <h3>凃秉成</h3>
+        <div class="role">行銷/公關｜企業訪談與痛點分析</div>
+        <div class="pillrow">
+          <span class="pill">企業訪談</span><span class="pill">痛點整理</span><span class="pill">需求文件</span><span class="pill">提案敘事</span>
+        </div>
+
+        <div class="block">
+          <div class="label">主要任務（詳細）</div>
+          <div class="text">
+            1) 擬定訪談名單（目標：中小企業會計人員/財會主管/代帳業者）。<br>
+            2) 設計訪談題綱：最花時間的流程、最常出錯的地方、調節表現況、使用工具與阻力。<br>
+            3) 產出痛點分析報告：把訪談內容整理成「可落地的需求清單」與「MVP優先級」。<br>
+            4) 協助提案敘事：把技術轉成企業聽得懂的價值（省時、降錯、可追溯）。
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="label">交付物</div>
+          <div class="text">訪談題綱、訪談紀錄、痛點分析報告、需求優先級、提案簡報素材。</div>
+        </div>
+      </div>
+
+      <div class="member g4 reveal" data-anim="right">
+        <h3>呂子廷</h3>
+        <div class="role">開發支援｜測試與使用流程驗證</div>
+        <div class="pillrow">
+          <span class="pill">測試</span><span class="pill">流程驗證</span><span class="pill">回饋迭代</span>
+        </div>
+
+        <div class="block">
+          <div class="label">主要任務（詳細）</div>
+          <div class="text">
+            1) 建立測試清單：匯入、分類、分錄、調節表、報表、檢核每個功能要測什麼。<br>
+            2) 設計 demo 使用流程：讓「不懂系統的人」也能照流程跑完（期末展示必備）。<br>
+            3) 追蹤問題與回饋：整理 bug/易用性問題，協助開發迭代修正。<br>
+            4) 協助驗證結果：確保輸出報表/調節表符合預期，不會出現明顯不合理輸出。
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="label">交付物</div>
+          <div class="text">測試用例、問題追蹤清單、demo 操作流程稿、期末展示腳本。</div>
+        </div>
+      </div>
+
+      <div class="member g5 reveal" data-anim="left">
+        <h3>呂翊玄</h3>
+        <div class="role">開發支援｜案例資料與文件協作</div>
+        <div class="pillrow">
+          <span class="pill">案例資料</span><span class="pill">測試資料</span><span class="pill">文件整理</span>
+        </div>
+
+        <div class="block">
+          <div class="label">主要任務（詳細）</div>
+          <div class="text">
+            1) 建立可用案例：整理「一個月」交易明細、對帳資料（可匿名化）供 demo 使用。<br>
+            2) 協助分類情境：把案例分成常見情境（餐費、交通、採購、服務費、收款…）供 LLM/規則測試。<br>
+            3) 協助文件化：把系統功能、資料格式、流程規範整理成容易閱讀的文件，讓組員不用開會也能同步。
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="label">交付物</div>
+          <div class="text">案例資料集、資料字典、功能/流程說明文件、測試資料版本管理。</div>
+        </div>
+      </div>
+
+      <div class="member g6 reveal" data-anim="right">
+        <h3>許紜綺</h3>
+        <div class="role">PM/秘書｜進度監督與文件統整（製片角色）</div>
+        <div class="pillrow">
+          <span class="pill">進度控管</span><span class="pill">會議紀錄</span><span class="pill">文件統整</span><span class="pill">里程碑追蹤</span>
+        </div>
+
+        <div class="block">
+          <div class="label">主要任務（詳細）</div>
+          <div class="text">
+            1) 建立進度表：每週目標、負責人、交付物、截止日，並提醒跟進。<br>
+            2) 統整所有文件：需求、規格、訪談、測試、簡報、期末報告，格式一致且可快速找到。<br>
+            3) 監督里程碑：確保「能 demo」優先，避免做出很多功能但沒有完整流程。<br>
+            4) 對外材料整理：期中/期末報告、簡報、附件與引用資料統一整理。
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="label">交付物</div>
+          <div class="text">進度追蹤表、會議紀錄、文件目錄與統整、期中/期末報告彙整版本。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    © AI會計自動化系統（中小企業）｜單頁投資案式簡報網站
+  </div>
+
+  <script>
+    // ====== Reveal animations (IntersectionObserver) ======
+    (function(){
+      const els = document.querySelectorAll('.reveal');
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            e.target.classList.add('active');
+            io.unobserve(e.target);
+          }
+        })
+      }, { threshold: 0.12 });
+      els.forEach(el=>io.observe(el));
+    })();
+
+    // ====== Plotly theme helper ======
+    const plotBaseLayout = {
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      font: { color: "rgba(232,238,246,.92)", size: 13 },
+      margin: { l: 16, r: 16, t: 18, b: 18 }
+    };
+
+    // ====== Flow Sankey (with richer hover) ======
+    const flowLabels = [
+      "資料匯入",
+      "資料庫入庫",
+      "LLM會計助手",
+      "調節表/對帳",
+      "人工審核",
+      "報表生成+檢核",
+      "輸出交付"
+    ];
+
+    const flowHover = [
+      "輸入：交易/對帳/憑證（Excel/CSV）\n輸出：raw版本＋匯入紀錄\n用意：可重現、可追溯",
+      "輸入：raw資料\n輸出：標準化資料表與索引\n用意：讓LLM/對帳/報表穩定",
+      "輸入：交易摘要/對象/用途/金額\n輸出：分錄草案＋理由＋信心＋缺件提醒\n用意：以審核取代從零",
+      "輸入：帳上明細＋對帳資料\n輸出：調節表＋差異清單＋建議調整方向\n用意：把差異變成任務清單",
+      "輸入：草案與差異清單\n輸出：核准/修改/補件紀錄\n用意：LLM提案、人類核准",
+      "輸入：核准分錄\n輸出：損益/資產負債（MVP）＋檢核結果\n用意：輸出前抓錯降低補帳",
+      "輸出：報表＋明細＋調節表＋問題清單＋歷程\n用意：可交付、可展示、可驗證"
+    ];
+
+    const flowData = [{
+      type: "sankey",
+      arrangement: "fixed",
+      orientation: "h",
+      node: {
+        pad: 20,
+        thickness: 18,
+        label: flowLabels,
+        customdata: flowHover,
+        line: { color: "rgba(255,255,255,.18)", width: 1 },
+        hovertemplate: "<b>%{label}</b><br><br>%{customdata}<extra></extra>"
+      },
+      link: {
+        source: [0,1,2,3,4,5],
+        target: [1,2,3,4,5,6],
+        value:  [1,1,1,1,1,1],
+        hovertemplate: "%{source.label} → %{target.label}<extra></extra>"
+      }
+    }];
+
+    Plotly.newPlot("flowPlot", flowData, {
+      ...plotBaseLayout,
+      margin: { l: 10, r: 10, t: 10, b: 10 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ====== Roadmap Step Chart (months on Y, stage on X) ======
+    const months = ["2月","1月","12月","11月","10月","9月","8月","7月","6月","5月","4月","3月"];
+    // 對應每月階段（你之後可改）
+    const stage =  [5,5,5,5,4,4,3,3,2,2,1,1];
+
+    // 負責人（你之後可改）
+    const owner = [
+      "全體","全體","全體","全體",
+      "孝安","孝安",
+      "孝安","孝安",
+      "承燁","承燁",
+      "秉成","秉成"
+    ];
+
+    // 每月交付物（你之後可改）
+    const deliverable = [
+      "最終展示與報告｜Demo錄影/口條演練/附件整理",
+      "Demo收斂｜修正問題清單｜準備期末發表素材",
+      "測試與穩定化｜案例全流程跑通｜補齊邊界情境",
+      "測試計畫完成｜功能驗證｜可追溯流程確認",
+      "報表生成 + 檢核引擎（MVP完成）",
+      "調節表/對帳模組（銀行調節 + AR/AP）",
+      "LLM 分錄草案（理由/信心/缺件）＋審核流程",
+      "資料匯入→入庫→查詢（資料流跑通）",
+      "系統設計｜模組規格（報表/調節/檢核）",
+      "資料模型/DB schema（追溯與版本）",
+      "企業訪談＋痛點報告＋MVP範圍定義",
+      "訪談題綱＋名單＋訪談排程"
+    ];
+
+    // Step-like effect with hv line; but with months on Y we plot y as category and x as stage
+    const roadmapData = [{
+      type: "scatter",
+      mode: "lines+markers",
+      x: stage,
+      y: months,
+      line: { shape: "hv", width: 4 },
+      marker: { size: 9 },
+      customdata: owner,
+      text: deliverable,
+      hovertemplate:
+        "<b>%{y}</b><br>" +
+        "階段：%{x}<br>" +
+        "負責人：%{customdata}<br>" +
+        "本月交付：%{text}<extra></extra>"
+    }];
+
+    const roadmapLayout = {
+      ...plotBaseLayout,
+      xaxis: {
+        title: "階段（1→5）",
+        rangemode: "tozero",
+        dtick: 1,
+        gridcolor: "rgba(255,255,255,.08)",
+        zerolinecolor: "rgba(255,255,255,.10)"
+      },
+      yaxis: {
+        title: "月份",
+        type: "category",
+        gridcolor: "rgba(255,255,255,.06)"
+      }
+    };
+
+    Plotly.newPlot("roadmapPlot", roadmapData, roadmapLayout, {
+      displayModeBar: false,
+      responsive: true
+    });
+
+    // ====== Optional: ensure charts resize nicely when orientation changes ======
+    window.addEventListener("resize", () => {
+      Plotly.Plots.resize("flowPlot");
+      Plotly.Plots.resize("roadmapPlot");
+    });
+  </script>
+</body>
+</html>
